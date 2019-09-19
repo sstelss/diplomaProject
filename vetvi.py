@@ -30,7 +30,7 @@ def ReadPointGraph(path):
 
     G = nx.Graph()
     ids = list(coords.keys())
-    print(coords)
+    # print(coords)
     for i in range(len(ids)):
         # расстояние будем искать для всех последующих вершин
         for j in range(i + 1, len(ids)):
@@ -52,16 +52,14 @@ def printMatrix(matrix, prevText):
 def mainPart(G):
 
     # create a matrix
-    matrix = np.ones(G.nodes**2).reshape(G.nodes, G.nodes)
+    matrixLen = len(G.nodes)
+    matrix = np.ones(matrixLen**2).reshape(matrixLen, matrixLen)
     for i in G.nodes:
-        tempString = []
         for j in G.nodes:
             if i == j:
-                tempElement = math.inf
+                matrix[i-1][j-1] = math.inf
             else:
-                tempElement = G[i][j]['weight']
-            tempString.append(tempElement)
-        matrix.append(tempString.copy())
+                matrix[i-1][j-1] = G[i][j]['weight']
 
     # Test log created matrix
     printMatrix(matrix, "StartMatrix")
@@ -81,8 +79,7 @@ def mainPart(G):
     printMatrix(matrix, "Matrix After Sub String")
 
     # Find minimum element in each colone
-    tempArray = np.array(matrix)
-    minColomnElements = [min(tempArray[:,i]) for i in range(len(matrix))]
+    minColomnElements = [min(matrix[:, i]) for i in range(len(matrix))]
     print(minColomnElements)
 
     # subtraction min element from each element in colomn
@@ -93,17 +90,32 @@ def mainPart(G):
     # Test log matrix
     printMatrix(matrix, "Matrix After Sub Colon")
 
-    nullList = []
+    # Estimate each null
+    maxNullElement = {"value": -1, "string": 0, "column": 0}
     for i in range(len(matrix)):
         for j in range(len(matrix[i])):
             if matrix[i][j] == 0:
+                minElementInString = np.concatenate((matrix[i, :j], matrix[i, j+1:])).min()
+                minElementInColomn = np.concatenate((matrix[:i, j], matrix[i+1:, j])).min()
+                value = minElementInColomn + minElementInString
+                print("value", value)
+                if value > maxNullElement["value"]:
+                    maxNullElement["value"] = value
+                    maxNullElement["string"] = i
+                    maxNullElement["column"] = j
+
+    print("maxNullElement: ", maxNullElement)
+
+    # Eraser colomn and string from maxNullElement
+    matrix = np.concatenate((matrix[:maxNullElement["string"]], matrix[maxNullElement["string"]+1:]))
+    matrix =
 
 
 
 if __name__ == '__main__':
     print(f"start algorithm of BAE!")
     G = ReadPointGraph("graph/test.tsp.txt")
-    print(G.edges)
+    # print(G.edges)
 
     mainPart(G)
 
